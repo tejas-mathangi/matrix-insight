@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matrix Insight — Visualizing Linear Algebra</title>
+  <meta name="description" content="Interactive animated matrix operations visualizer — multiply, transpose, determinant, and inverse with step-by-step animations." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="app-layout">
+
+    <!-- ── LEFT SIDEBAR ── -->
+    <aside class="sidebar" role="complementary" aria-label="Matrix Input Controls">
+
+      <div class="sidebar-brand">
+        <div class="brand-icon" aria-hidden="true">
+          <div class="grid-icon">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">Matrix Insight</h1>
+          <p class="brand-subtitle">Linear Algebra Visualizer</p>
+        </div>
+      </div>
+
+      <div class="sidebar-divider" aria-hidden="true"></div>
+
+      <!-- Matrix Size Selector -->
+      <div class="sidebar-section">
+        <label class="section-label" id="size-label">MATRIX SIZE</label>
+        <div class="toggle-group" role="group" aria-labelledby="size-label">
+          <button id="btn-size-2" class="toggle-btn" aria-pressed="false" onclick="setMatrixSize(2)">2 × 2</button>
+          <button id="btn-size-3" class="toggle-btn active" aria-pressed="true" onclick="setMatrixSize(3)">3 × 3</button>
+        </div>
+      </div>
+
+      <!-- Matrix A Input -->
+      <div class="sidebar-section matrix-input-section">
+        <div class="matrix-header">
+          <label class="section-label">MATRIX A</label>
+          <div class="matrix-actions">
+            <button id="btn-random-a" class="action-btn random-btn" onclick="fillRandom('A')" aria-label="Fill Matrix A with random values">⚄ Random</button>
+            <button id="btn-clear-a" class="action-btn clear-btn" onclick="clearMatrix('A')" aria-label="Clear Matrix A">✕ Clear</button>
+          </div>
+        </div>
+        <div id="matrix-a" class="matrix-grid" role="grid" aria-label="Matrix A input grid"></div>
+      </div>
+
+      <!-- Matrix B Input -->
+      <div class="sidebar-section matrix-input-section">
+        <div class="matrix-header">
+          <label class="section-label">MATRIX B</label>
+          <div class="matrix-actions">
+            <button id="btn-random-b" class="action-btn random-btn" onclick="fillRandom('B')" aria-label="Fill Matrix B with random values">⚄ Random</button>
+            <button id="btn-clear-b" class="action-btn clear-btn" onclick="clearMatrix('B')" aria-label="Clear Matrix B">✕ Clear</button>
+          </div>
+        </div>
+        <div id="matrix-b" class="matrix-grid" role="grid" aria-label="Matrix B input grid"></div>
+      </div>
+
+      <!-- Animation Speed Control -->
+      <div class="sidebar-section">
+        <label class="section-label" for="speed-range">ANIMATION SPEED</label>
+        <div class="speed-control">
+          <span class="speed-label">Slow</span>
+          <input type="range" id="speed-range" min="1" max="5" value="3" class="speed-slider" oninput="setAnimSpeed(this.value)" />
+          <span class="speed-label">Fast</span>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main class="main-content" role="main">
+
+      <header class="content-header">
+        <div class="header-text">
+          <h2 class="content-title">Operations</h2>
+          <p class="content-subtitle">Select an operation — watch it animate step by step</p>
+        </div>
+      </header>
+
+      <!-- Operation Buttons -->
+      <section class="operations-panel" aria-label="Matrix operations">
+        <button id="btn-multiply" class="op-btn op-btn--primary" onclick="runOperation('multiply')" aria-label="Multiply A × B">
+          <span class="op-btn-icon">×</span>
+          <span class="op-btn-label">Multiply</span>
+          <span class="op-btn-desc">A × B</span>
+        </button>
+        <button id="btn-transpose" class="op-btn op-btn--secondary" onclick="runOperation('transpose')" aria-label="Transpose A">
+          <span class="op-btn-icon">⊤</span>
+          <span class="op-btn-label">Transpose</span>
+          <span class="op-btn-desc">A<sup>T</sup></span>
+        </button>
+        <button id="btn-determinant" class="op-btn op-btn--secondary" onclick="runOperation('determinant')" aria-label="Determinant of A">
+          <span class="op-btn-icon">|·|</span>
+          <span class="op-btn-label">Determinant</span>
+          <span class="op-btn-desc">det(A)</span>
+        </button>
+        <button id="btn-inverse" class="op-btn op-btn--secondary" onclick="runOperation('inverse')" aria-label="Inverse of A">
+          <span class="op-btn-icon">⁻¹</span>
+          <span class="op-btn-label">Inverse</span>
+          <span class="op-btn-desc">A<sup>-1</sup></span>
+        </button>
+      </section>
+
+      <!-- Error Banner -->
+      <div id="error-banner" class="error-banner" role="alert" aria-live="assertive" style="display:none">
+        <span class="error-icon" aria-hidden="true">⚠</span>
+        <span id="error-message" class="error-text"></span>
+        <button class="error-close" onclick="dismissError()" aria-label="Dismiss error">✕</button>
+      </div>
+
+      <!-- ══════════════════════════════════
+           ANIMATION CANVAS — shown during ops
+      ══════════════════════════════════ -->
+      <section class="anim-canvas" id="anim-canvas" style="display:none" aria-label="Operation animation">
+
+        <!-- Animation title -->
+        <div class="anim-header">
+          <span class="anim-title" id="anim-title">Animating…</span>
+          <button class="anim-skip-btn" id="anim-skip-btn" onclick="skipAnimation()">Skip ⏩</button>
+        </div>
+
+        <!-- Main visualization: matrices side by side -->
+        <div class="anim-stage" id="anim-stage">
+
+          <!-- Matrix A display -->
+          <div class="anim-matrix-wrap" id="anim-wrap-a">
+            <div class="anim-matrix-label" id="anim-label-a">A</div>
+            <div class="anim-bracket-left"></div>
+            <div class="anim-grid-container">
+              <div class="anim-grid" id="anim-grid-a"></div>
+            </div>
+            <div class="anim-bracket-right"></div>
+          </div>
+
+          <!-- Operator symbol -->
+          <div class="anim-op-symbol" id="anim-op-symbol">×</div>
+
+          <!-- Matrix B display (hidden for single-matrix ops) -->
+          <div class="anim-matrix-wrap" id="anim-wrap-b">
+            <div class="anim-matrix-label" id="anim-label-b">B</div>
+            <div class="anim-bracket-left"></div>
+            <div class="anim-grid-container">
+              <div class="anim-grid" id="anim-grid-b"></div>
+            </div>
+            <div class="anim-bracket-right"></div>
+          </div>
+
+          <!-- Equals sign -->
+          <div class="anim-equals" id="anim-equals">=</div>
+
+          <!-- Result display -->
+          <div class="anim-matrix-wrap" id="anim-wrap-result">
+            <div class="anim-matrix-label" id="anim-label-result">Result</div>
+            <div class="anim-bracket-left anim-bracket-primary"></div>
+            <div class="anim-grid-container">
+              <div class="anim-grid" id="anim-grid-result"></div>
+            </div>
+            <div class="anim-bracket-right anim-bracket-primary"></div>
+          </div>
+
+        </div>
+
+        <!-- Augmented matrix section (for Inverse) -->
+        <div class="anim-augmented" id="anim-augmented" style="display:none">
+          <div class="anim-matrix-wrap">
+            <div class="anim-matrix-label">A</div>
+            <div class="anim-bracket-left"></div>
+            <div class="anim-grid-container">
+              <div class="anim-grid" id="anim-grid-aug-a"></div>
+            </div>
+            <div class="anim-aug-divider" aria-hidden="true"></div>
+            <div class="anim-grid-container">
+              <div class="anim-grid" id="anim-grid-aug-i"></div>
+            </div>
+            <div class="anim-bracket-right"></div>
+          </div>
+          <div class="anim-op-symbol">→</div>
+          <div class="anim-matrix-wrap">
+            <div class="anim-matrix-label">I</div>
+            <div class="anim-bracket-left anim-bracket-primary"></div>
+            <div class="anim-grid-container">
+              <div class="anim-grid" id="anim-grid-aug-i2"></div>
+            </div>
+            <div class="anim-aug-divider" aria-hidden="true"></div>
+            <div class="anim-grid-container">
+              <div class="anim-grid" id="anim-grid-aug-result"></div>
+            </div>
+            <div class="anim-bracket-right anim-bracket-primary"></div>
+          </div>
+        </div>
+
+        <!-- Formula / calculation line -->
+        <div class="anim-formula-box" id="anim-formula-box" style="display:none">
+          <div class="anim-formula-label" id="anim-formula-label">Calculating…</div>
+          <div class="anim-formula-text" id="anim-formula-text"></div>
+          <div class="anim-formula-result" id="anim-formula-result"></div>
+        </div>
+
+        <!-- Determinant diagonal paths -->
+        <div class="anim-det-box" id="anim-det-box" style="display:none">
+          <div class="anim-det-pos" id="anim-det-pos"></div>
+          <div class="anim-det-minus">−</div>
+          <div class="anim-det-neg" id="anim-det-neg"></div>
+          <div class="anim-det-equals">=</div>
+          <div class="anim-det-value" id="anim-det-value">?</div>
+        </div>
+
+        <!-- Progress dots -->
+        <div class="anim-progress" id="anim-progress">
+          <div class="anim-progress-bar" id="anim-progress-bar"></div>
+        </div>
+
+      </section>
+
+      <!-- ── RESULT SECTION ── -->
+      <section class="result-section" id="result-section" aria-label="Operation result" aria-live="polite">
+
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon" aria-hidden="true">∑</div>
+          <p class="empty-title">Ready to Compute</p>
+          <p class="empty-hint">Enter values in Matrix A (and B), then click an operation above to see it animate.</p>
+        </div>
+
+        <div class="result-display" id="result-display" style="display:none">
+          <div class="result-header">
+            <div class="result-meta">
+              <span class="result-operation-tag" id="result-operation-tag"></span>
+              <span class="result-dims" id="result-dims"></span>
+            </div>
+          </div>
+          <div class="result-matrix-wrapper">
+            <div class="matrix-bracket bracket-left" aria-hidden="true"></div>
+            <div id="result-grid" class="matrix-grid result-grid" role="grid" aria-label="Operation result"></div>
+            <div class="matrix-bracket bracket-right" aria-hidden="true"></div>
+          </div>
+          <div class="scalar-result" id="scalar-result" style="display:none">
+            <span class="scalar-label" id="scalar-label">det(A) =</span>
+            <span class="scalar-value" id="scalar-value"></span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ── STEP-BY-STEP ── -->
+      <section class="steps-section" id="steps-section" style="display:none" aria-label="Step-by-step breakdown">
+        <button class="steps-toggle" id="steps-toggle" onclick="toggleSteps()" aria-expanded="false" aria-controls="steps-content">
+          <span class="steps-toggle-icon" id="steps-toggle-icon" aria-hidden="true">▶</span>
+          <span>Step-by-Step Breakdown</span>
+          <span class="steps-count" id="steps-count"></span>
+        </button>
+        <div class="steps-content" id="steps-content" style="display:none">
+          <ol class="steps-list" id="steps-list"></ol>
+        </div>
+      </section>
+
+      <footer class="content-footer">
+        <p>Matrix Insight · Animated Linear Algebra Visualizer · Built with ♥</p>
+      </footer>
+
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
