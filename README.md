@@ -2,7 +2,7 @@
 
 An interactive web app that helps users understand matrix operations visually using NumPy.
 
-## 🎯 What This Project Does
+##  What This Project Does
 
 - Input 2×2 or 3×3 matrices manually or generate them randomly
 - Perform key linear algebra operations: **Multiply**, **Transpose**, **Determinant**, **Inverse**
@@ -10,7 +10,7 @@ An interactive web app that helps users understand matrix operations visually us
 - See step-by-step breakdowns for matrix multiplication
 - Clear error messages for invalid operations (e.g., singular matrices)
 
-## 🗂️ Project Structure
+##  Project Structure
 
 ```
 matrix-visualizer/
@@ -28,7 +28,7 @@ matrix-visualizer/
 ├── requirements.txt
 ```
 
-## 🚀 Setup
+##  Setup
 
 ### 1. Install Python dependencies
 
@@ -46,14 +46,14 @@ python backend/main.py
 
 Open `frontend/index.html` in your browser — no server needed for Version 1.
 
-## 🧠 Tech Stack
+##  Tech Stack
 
 | Layer    | Technology              |
 |----------|-------------------------|
 | Frontend | HTML, CSS, Vanilla JS   |
 | Backend  | Python + NumPy          |
 
-## 📚 Operations Implemented
+##  Operations Implemented
 
 | Operation        | Function                   | Description                        |
 |-----------------|----------------------------|------------------------------------|
@@ -62,13 +62,13 @@ Open `frontend/index.html` in your browser — no server needed for Version 1.
 | Determinant      | `determinant_matrix(A)`    | Scalar value det(A)                |
 | Inverse          | `inverse_matrix(A)`        | A⁻¹ if det(A) ≠ 0, else error     |
 
-## 📖 Learning Goals
+##  Learning Goals
 
 - Understand matrix operations conceptually, not just computationally
 - See how NumPy abstracts complex math into clean Python functions
 - Develop intuition through visual grid-based representations
 
-## 🛠️ Future Versions
+##  Future Versions
 
 - **Version 2**: Flask REST API backend + Fetch integration
 - **Version 3**: React frontend with D3.js visualization
